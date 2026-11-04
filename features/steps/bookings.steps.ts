@@ -1,6 +1,7 @@
 import { createBdd } from 'playwright-bdd';
 import { test, expect } from '../../fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
+import { CreateBookingResponseSchema } from '../../pages/api/booking.schema'; 
 
 // ✅ On stocke l'état du test ici
 let bookingId: number;
@@ -20,7 +21,13 @@ Given('je crée une nouvelle réservation', async ({ bookingApi }) => {
   
   expect(response.status()).toBe(200);
   const body = await response.json();
-  bookingId = body.bookingid; // On sauvegarde l'ID pour l'étape suivante
+  
+  // ✅ LA MAGIE DU CONTRACT TESTING : Zod valide la structure et les types
+  // et TypeScript sait maintenant que parsedData contient bien un bookingid de type number
+  const parsedData = CreateBookingResponseSchema.parse(body);
+  
+  // ✅ On sauvegarde l'ID validé par Zod
+  bookingId = parsedData.bookingid; 
 });
 
 Given('je récupère un token d\'authentification', async ({ bookingApi }) => {
